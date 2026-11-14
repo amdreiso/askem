@@ -1,4 +1,7 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -24,7 +27,8 @@
 int main(int argc, char **argv)
 {
 	int width, height, channels;
-	char *ch = "█";
+	char ch;
+	bool ascii = false;
 
 	if (argc < 2) {
 		printf("Usage: askii <filename> <char?>\n");
@@ -32,8 +36,21 @@ int main(int argc, char **argv)
 	}
 
 	char *path = argv[1];
+	char **flags = {};
+
 	if (argc > 2) {
-		ch = argv[2];
+		for (size_t i = 3; i < argc; i++) {
+			if (strcmp(argv[i], "--ascii") == 0) {
+				ascii = true;
+			}
+		}
+
+		if (ascii == true) {
+			int num = atoi(argv[2]);
+			ch = (unsigned char)num;
+		} else {
+			ch = argv[2][0];
+		}
 	}
 
 	unsigned char *img = stbi_load(path, &width, &height, &channels, 0);
@@ -56,7 +73,11 @@ int main(int argc, char **argv)
 				continue;
 			}
 
-			printf("\033[38;2;%d;%d;%dm%s%s%s", r, g, b, ch, ch, COLOR_RESET);
+			if (ascii) {
+				printf("\033[38;2;%d;%d;%dm%c%c%s", r, g, b, ch, ch, COLOR_RESET);
+			} else {
+				printf("\033[38;2;%d;%d;%dm%c%c%s", r, g, b, ch, ch, COLOR_RESET);
+			}
 		}
 		printf("\n");
 	}
